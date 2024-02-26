@@ -23,51 +23,61 @@ const mainMenu = [
 ];
 
 const allDepartments = () => {
-    db.query('SELECT * FROM department', (err, results) => {
-        if (err) {
-            console.error('Error querying database' + err.stack);
-        }
-        departmentsCurrent = results.map(row => {
-            return {
-                id: row.id,
-                name: row.name
-            };
+    return new Promise((resolve, reject) => {
+        db.query('SELECT * FROM department', (err, results) => {
+            if (err) {
+                console.error('Error querying database' + err.stack);
+                reject(err);
+            }
+            departmentsCurrent = results.map(row => {
+                return {
+                    id: row.id,
+                    name: row.name
+                };
+            });
+            resolve(departmentsCurrent);
         });
-    });
-
+    })
 };
 
 const roles = () => {
-    db.query('SELECT * FROM role', (err, results) => {
-        if (err) {
-            console.error('Error querying database' + err.stack);
-        }
-        rolesCurrent = results.map(row => {
-            return {
-                id: row.id,
-                name: row.title,
-                salary: row.salary,
-                department: row.department_id,
-            };
+    return new Promise((resolve, reject) => {
+        db.query('SELECT * FROM role', (err, results) => {
+            if (err) {
+                console.error('Error querying database' + err.stack);
+                reject(err);
+            }
+            rolesCurrent = results.map(row => {
+                return {
+                    id: row.id,
+                    name: row.title,
+                    salary: row.salary,
+                    department: row.department_id,
+                };
+            });
+            resolve(rolesCurrent);
         });
-    });
-
+    })
 };
 
 const allSupervisors = () => {
-    db.query('SELECT * FROM employee WHERE manager_id IS NULL', (err, results) => {
-        if (err) {
-            console.error('Error querying database' + err.stack);
-        }
-        supervisors = results.map(row => {
-            return {
-                id: row.id,
-                first_name: row.first_name,
-                last_name: row.last_name
-            };
+    return new Promise((resolve, reject) => {
+        db.query('SELECT * FROM employee WHERE manager_id IS NULL', (err, results) => {
+            if (err) {
+                console.error('Error querying database' + err.stack);
+                reject(err);
+            }
+            supervisors = results.map(row => {
+                return {
+                    id: row.id,
+                    first_name: row.first_name,
+                    last_name: row.last_name
+                };
+            });
+            resolve(supervisors);
         });
-    });
-}
+    })
+};
 
 process.on('unhandledRejection', (reason, promise) => {
     console.error('Unhandled Rejection at:', promise, 'reason:', reason);
@@ -128,7 +138,6 @@ const database = async () => {
                 break;
             case 'Quit':
                 process.exit();
-                break;
             default:
                 console.log('Invalid user choice');
         }
@@ -138,13 +147,11 @@ const database = async () => {
     }
 }
 
-//database();
 const addEmplyee = async () => {
     try {
         await viewEmployees();
         await allDepartments();
         await roles();
-        console.log(supervisors);
         const answers = await inquirer
             .prompt([
                 {
@@ -173,22 +180,22 @@ const addEmplyee = async () => {
         if (answers.hasSupervisor) {
             await allSupervisors();
             console.log(answers)
-            const supervisorAnswer = 
-            await inquirer.prompt([
-                {
-                    type: 'list',
-                    name: 'employeeSupervisor',
-                    message: 'Add supervisor',
-                    choices: supervisors.map(employee => ({ name: `${employee.first_name} ${employee.last_name}`, value: employee.id })), //array of all current supervisors
-                }
-            ]);
+            const supervisorAnswer =
+                await inquirer.prompt([
+                    {
+                        type: 'list',
+                        name: 'employeeSupervisor',
+                        message: 'Add supervisor',
+                        choices: supervisors.map(employee => ({ name: `${employee.first_name} ${employee.last_name}`, value: employee.id })), //array of all current supervisors
+                    }
+                ]);
             const query = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)`;
             db.query(query, [answers.name_first, answers.name_last, answers.employeeRole, supervisorAnswer.employeeSupervisor], (error, result) => {
                 if (error) {
                     console.error(error);
                 } else {
                     console.log('Employee added')
-                   
+
                 }
             });
 
@@ -200,7 +207,7 @@ const addEmplyee = async () => {
                     console.error(error);
                 } else {
                     console.log('Employee added')
-                  
+
                 }
             });
         }
@@ -210,6 +217,22 @@ const addEmplyee = async () => {
     }
 };
 
+const textWithFormatting = `
++=======================================================+
+|   _____                 _                             |
+|  | ____|_ __ ___  _ __ | | ___  _   _  ___  ___       |
+|  |  _| | '_ ' _ \\| '_ \\| |/ _ \\| | | |/ _ \\/ _ \\      |
+|  | |___| | | | | | |_) | | (_) | |_| |  __/  __/      |
+|  |_____|_| |_| |_| .__/|_|\\___/ \\__, |\\___|\\___|_  _  |
+|  |  \\/  | __ _ _ |_|  __ _  __ _|___/ _ __  | ___|| | |
+|  | |\\/| |/ _' | '_ \\ / _' |/ _' |/ _ \\ '__| |___ \\| | |
+|  | |  | | (_| | | | | (_| | (_| |  __/ |     ___) |_| |
+|  |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|    |____/(_) |
+|                            |___/                      |
++=======================================================+
+`
+
+console.log(textWithFormatting);
 database();
 
 const viewRoles = async () => {
@@ -218,19 +241,15 @@ const viewRoles = async () => {
             if (err) {
                 reject(err);
             }
-            let consoleTable = '---------------------\nRole #\t| Role Title\t\t   |   Salary\t|   Department\n---------------------\n';
+            let consoleTable = '---------------------\nRole #\t| Role Title\t| Salary\t| Department\n---------------------\n';
             results.forEach(role => {
-                consoleTable = `${consoleTable}${role.id}\t| ${role.title}\t\t|    ${role.salary}\t|   ${role.department_id}\n`;
+                consoleTable = `${consoleTable}${role.id}\t| ${role.title}\t|${role.salary}\t\t| ${role.department_id}\n`;
             })
             console.log(consoleTable);
             resolve();
 
         });
     });
-
-    // db.query('SELECT * from role', function (err, results) {
-    //     console.log(results);
-    // });
 };
 
 
@@ -258,25 +277,24 @@ const viewEmployees = async () => {
             if (err) {
                 reject(err);
             }
-            let consoleTable = '---------------------\nEmployee #\t | First Name\t\t|  Last Name\t\t|  Role\t   |   Manager\n---------------------\n';
+            let consoleTable = '---------------------\nEmployee #\t| First Name\t|Last Name\t|Role\t   |Manager\n---------------------\n';
             results.forEach(employee => {
-                consoleTable = `${consoleTable}${employee.id}\t\t| ${employee.first_name}\t\t ${employee.last_name}\t\t ${employee.role_id}\t ${employee.manager_id}\n`;
+                consoleTable = `${consoleTable}${employee.id}\t\t| ${employee.first_name}\t\t|${employee.last_name}\t\t|${employee.role_id}\t   |${employee.manager_id}\n`;
             })
             console.log(consoleTable);
             resolve();
 
         });
     });
-    // db.query('SELECT * from employee', function (err, results) {
-    //     // console.log(results);
-    //     console.table(results);
-    // });
+
 };
 
-const updateRole = async () => {
+// use ConsoleTable
 
-    await viewRoles();
+const updateRole = async () => {
     try {
+        await viewRoles();
+
         const newRoleAnswers = await inquirer
             .prompt([
                 {
@@ -313,14 +331,6 @@ const updateRole = async () => {
 const addDepartment = async () => {
     await viewDepartments();
     try {
-        // db.query('SELECT * from department', function (err, results) {
-        //     const resultsAsObj = results.reduce((acc, { id, ...x }) => {
-        //         acc[id] = x;
-        //         return acc
-        //     }, acc);
-        //     console.table(resultsAsObj);
-        // });
-
         const newDepartmentAnswers = await inquirer.prompt([
             {
                 type: 'input',
