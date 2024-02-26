@@ -17,14 +17,18 @@ VALUES  ('Engineer', 80000, 1),
         ('Hauler', 50000, 5),
         ('Warehouse Manager', 75000, 5);
 
-INSERT INTO employee (first_name, last_name, role_id, manager_id)
-VALUES  ('Bill', 'Gurr', 2),
-        ('Dave', 'Chappy', 4),
-        ('Richard', 'After', 6),
-        ('Chris', 'Broke', 8),
-        ('Sarah', 'Golderman', 10),
-        ('John', 'Lynch', 1, 1),
+    -- managers only
+INSERT INTO employee (first_name, last_name, role_id, manager_id) 
+VALUES  ('Bill', 'Gurr', 2, NULL),
+        ('Dave', 'Chappy', 4, NULL),
+        ('Richard', 'After', 6, NULL),
+        ('Chris', 'Broke', 8, NULL),
+        ('Sarah', 'Golderman', 10, NULL);
+        
+    -- all other employees
+INSERT INTO employee (first_name, last_name, role_id, manager_id) 
+VALUES  ('John', 'Lynch', 1, 1),
         ('Jessica', 'Johns', 3, 2),
         ('Kyle', 'Knowsite', 5, 3),
         ('Tye', 'Debwoski', 7, 4),
-        ('Lauren', 'Allboutit', 9, 5),
+        ('Lauren', 'Allboutit', 9, 5);
