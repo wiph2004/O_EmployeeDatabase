@@ -41,6 +41,10 @@ THEN I am prompted to select an employee to update and their new role and this i
 
 # Location
 
+https://www.loom.com/share/edca0ceb76474a9b8cc30133c39363de?sid=e880a3e3-0c48-4269-b4ce-6dbbf8a1a4c1
+
+![image](https://github.com/wiph2004/O_EmployeeDatabase/assets/149805523/1789f6f8-424c-4862-9d74-0f3d51770122)
+
 
 
 # Credits
